@@ -1,9 +1,10 @@
 import { Router } from "express";
 import argon2 from "argon2";
 import {client} from "@repo/db/client";
-import {CreateUserSchema, SigninSchema} from "@repo/common/types";
+import {CreateRoomSchema, CreateUserSchema, SigninSchema} from "@repo/common/types";
 import { JWT_KEY } from "../config";
 import jwt from "jsonwebtoken";
+import { auth, CustomRequest } from "../middleware/auth";
 const router:Router=Router();
 
 router.post('/signin',async(req,res)=>{
@@ -70,6 +71,83 @@ router.post('/signup',async(req,res)=>{
         
     }
 });
+
+router.post('/room',async(req:CustomRequest,res)=>{
+    try {
+        const parseData=CreateRoomSchema.safeParse(req.body);
+        if(!parseData.success){
+            res.status(401).json({message:"error in data you are sending"});
+            return;
+        }
+        const userId=req.userId;
+        if(!userId){
+            res.status(403).json({
+                message : "Unauthorized"
+            })
+            return;
+        }
+        const room = await client.room.create({
+            data:{
+                slug: parseData.data.name,
+                adminId: userId
+            }
+        })
+        res.json({
+            roomId: room.id
+        })
+        
+    } catch (error) {
+        console.log("error in room creation",error);
+        
+    }
+});
+
+
+
+router.get('/chats/:roomId',auth,async(req,res)=>{
+    try {
+        const roomId=Number(req.body.roomId);
+        const messages=await client.chats.findMany({
+            where:{
+                roomId
+            },
+            orderBy:{
+                id:"desc"
+            },
+            take:50
+        })
+        res.json({
+            messages: messages
+        })
+        
+    } catch (error) {
+        console.log("error in fetching chats",error);
+        res.status(411).json({
+            message:[]
+        })
+        
+    }
+
+});
+
+
+router.get('/room/:slug',auth,async(req,res)=>{
+    try {
+        const slug=req.params.slug;
+        const room=await client.findFirst({
+            where: {slug}
+        });
+        res.json({
+            message: room
+        })
+        
+    } catch (error) {
+        res.status(411).json({
+            message: "Error getting slug"
+        })
+        
+    }
+})
 
 export default router;
 
