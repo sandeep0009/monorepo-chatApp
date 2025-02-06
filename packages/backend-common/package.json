@@ -1,9 +1,9 @@
 {
-  "name": "prisma",
+  "name": "@repo/backend-common",
   "version": "1.0.0",
   "main": "index.js",
-  "exports":{
-    "./client":"./src/index.ts"
+  "exports": {
+    "./config-backend": "./src/index.ts"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -11,12 +11,15 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "devDependencies": {
     "@repo/typescript-config": "workspace:*"
   },
+  "description": "",
   "dependencies": {
-    "@prisma/client": "6.3.1",
-    "prisma": "^6.3.1"
+    "@types/jsonwebtoken": "^9.0.8",
+    "@types/ws": "^8.5.14",
+    "dotenv": "^16.4.7",
+    "jsonwebtoken": "^9.0.2",
+    "ws": "^8.18.0"
   }
 }
